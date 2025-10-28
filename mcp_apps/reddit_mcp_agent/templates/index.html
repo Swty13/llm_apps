@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit MCP Client - Beautiful UI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .reddit-icon {
+            color: #ff4500;
+            margin-right: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 15px 25px;
+            margin: 0 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+        }
+
+        .content {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255,107,107,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            box-shadow: 0 5px 15px rgba(116,185,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(116,185,255,0.4);
+        }
+
+        .results {
+            margin-top: 30px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .post-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            border-left: 4px solid #ff6b6b;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .post-card:hover {
+            transform: translateX(10px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .post-content {
+            color: rgba(255,255,255,0.9);
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        .error {
+            background: rgba(255,107,107,0.2);
+            border: 1px solid rgba(255,107,107,0.3);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .success {
+            background: rgba(0,184,148,0.2);
+            border: 1px solid rgba(0,184,148,0.3);
+            color: #00b894;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .comment-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 3px solid #74b9ff;
+        }
+
+        .comment-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .subreddit-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-card h3 {
+            color: #ff6b6b;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                margin: 5px;
+                padding: 10px 15px;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fab fa-reddit reddit-icon"></i>Reddit MCP Client</h1>
+            <p>Beautiful interface for exploring Reddit with MCP</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('fetch-posts')">
+                <i class="fas fa-fire"></i> Hot Posts
+            </button>
+            <button class="tab" onclick="showTab('search-posts')">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button class="tab" onclick="showTab('comments')">
+                <i class="fas fa-comments"></i> Comments
+            </button>
+            <button class="tab" onclick="showTab('subreddit-info')">
+                <i class="fas fa-info-circle"></i> Subreddit Info
+            </button>
+            <button class="tab" onclick="showTab('create-post')">
+                <i class="fas fa-plus"></i> Create Post
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Fetch Posts Tab -->
+            <div id="fetch-posts" class="tab-content active">
+                <h2><i class="fas fa-fire"></i> Fetch Hot Posts</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fetch-subreddit">Subreddit:</label>
+                        <input type="text" id="fetch-subreddit" placeholder="python" value="python">
+                    </div>
+                    <div class="form-group">
+                        <label for="fetch-limit">Limit:</label>
+                        <input type="number" id="fetch-limit" placeholder="10" value="10" min="1" max="50">
+                    </div>
+                </div>
+                <button class="btn" onclick="fetchPosts()">
+                    <i class="fas fa-download"></i> Fetch Posts
+                </button>
+                <div id="fetch-results"></div>
+            </div>
+
+            <!-- Search Posts Tab -->
+            <div id="search-posts" class="tab-content">
+                <h2><i class="fas fa-search"></i> Search Posts</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search-subreddit">Subreddit:</label>
+                        <input type="text" id="search-subreddit" placeholder="technology" value="technology">
+                    </div>
+                    <div class="form-group">
+                        <label for="search-limit">Limit:</label>
+                        <input type="number" id="search-limit" placeholder="10" value="10" min="1" max="50">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="search-query">Search Query:</label>
+                    <input type="text" id="search-query" placeholder="artificial intelligence">
+                </div>
+                <button class="btn btn-secondary" onclick="searchPosts()">
+                    <i class="fas fa-search"></i> Search Posts
+                </button>
+                <div id="search-results"></div>
+            </div>
+
+            <!-- Comments Tab -->
+            <div id="comments" class="tab-content">
+                <h2><i class="fas fa-comments"></i> Get Post Comments</h2>
+                <div class="form-group">
+                    <label for="post-id">Post ID:</label>
+                    <input type="text" id="post-id" placeholder="Enter Reddit post ID (without t3_ prefix)">
+                </div>
+                <button class="btn" onclick="getComments()">
+                    <i class="fas fa-comments"></i> Get Comments
+                </button>
+                <div id="comments-results"></div>
+            </div>
+
+            <!-- Subreddit Info Tab -->
+            <div id="subreddit-info" class="tab-content">
+                <h2><i class="fas fa-info-circle"></i> Subreddit Information</h2>
+                <div class="form-group">
+                    <label for="info-subreddit">Subreddit:</label>
+                    <input type="text" id="info-subreddit" placeholder="datascience" value="datascience">
+                </div>
+                <button class="btn btn-secondary" onclick="getSubredditInfo()">
+                    <i class="fas fa-info-circle"></i> Get Info
+                </button>
+                <div id="info-results"></div>
+            </div>
+
+            <!-- Create Post Tab -->
+            <div id="create-post" class="tab-content">
+                <h2><i class="fas fa-plus"></i> Create New Post</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="post-subreddit">Subreddit:</label>
+                        <input type="text" id="post-subreddit" placeholder="test">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="post-title">Title:</label>
+                    <input type="text" id="post-title" placeholder="Your post title">
+                </div>
+                <div class="form-group">
+                    <label for="post-content">Content (for text post):</label>
+                    <textarea id="post-content" rows="4" placeholder="Your post content..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="post-url">URL (for link post):</label>
+                    <input type="url" id="post-url" placeholder="https://example.com">
+                </div>
+                <button class="btn" onclick="createPost()">
+                    <i class="fas fa-plus"></i> Create Post
+                </button>
+                <div id="create-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading...
+                </div>
+            `;
+        }
+
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Error: ${message}
+                </div>
+            `;
+        }
+
+        function showSuccess(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="success">
+                    <i class="fas fa-check-circle"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        async function fetchPosts() {
+            const subreddit = document.getElementById('fetch-subreddit').value;
+            const limit = document.getElementById('fetch-limit').value;
+
+            showLoading('fetch-results');
+
+            try {
+                const response = await fetch('/api/fetch_posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ subreddit, limit: parseInt(limit) }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayPosts('fetch-results', result.data.posts);
+                } else {
+                    showError('fetch-results', result.error);
+                }
+            } catch (error) {
+                showError('fetch-results', error.message);
+            }
+        }
+
+        async function searchPosts() {
+            const subreddit = document.getElementById('search-subreddit').value;
+            const query = document.getElementById('search-query').value;
+            const limit = document.getElementById('search-limit').value;
+
+            if (!query) {
+                showError('search-results', 'Please enter a search query');
+                return;
+            }
+
+            showLoading('search-results');
+
+            try {
+                const response = await fetch('/api/search_posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ subreddit, query, limit: parseInt(limit) }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayPosts('search-results', result.data.posts);
+                } else {
+                    showError('search-results', result.error);
+                }
+            } catch (error) {
+                showError('search-results', error.message);
+            }
+        }
+
+        async function getComments() {
+            const postId = document.getElementById('post-id').value;
+
+            if (!postId) {
+                showError('comments-results', 'Please enter a post ID');
+                return;
+            }
+
+            showLoading('comments-results');
+
+            try {
+                const response = await fetch('/api/get_comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ post_id: postId }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayComments('comments-results', result.data);
+                } else {
+                    showError('comments-results', result.error);
+                }
+            } catch (error) {
+                showError('comments-results', error.message);
+            }
+        }
+
+        async function getSubredditInfo() {
+            const subreddit = document.getElementById('info-subreddit').value;
+
+            showLoading('info-results');
+
+            try {
+                const response = await fetch('/api/subreddit_info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ subreddit }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displaySubredditInfo('info-results', result.data);
+                } else {
+                    showError('info-results', result.error);
+                }
+            } catch (error) {
+                showError('info-results', error.message);
+            }
+        }
+
+        async function createPost() {
+            const subreddit = document.getElementById('post-subreddit').value;
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const url = document.getElementById('post-url').value;
+
+            if (!subreddit || !title) {
+                showError('create-results', 'Subreddit and title are required');
+                return;
+            }
+
+            showLoading('create-results');
+
+            try {
+                const response = await fetch('/api/create_post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ subreddit, title, content, url }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccess('create-results',
+                        `Post created successfully! <a href="${result.data.post_url}" target="_blank" style="color: #74b9ff;">View Post</a>`
+                    );
+                } else {
+                    showError('create-results', result.error);
+                }
+            } catch (error) {
+                showError('create-results', error.message);
+            }
+        }
+
+        function displayPosts(containerId, posts) {
+            const container = document.getElementById(containerId);
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div class="error">No posts found</div>';
+                return;
+            }
+
+            const postsHtml = posts.map(post => `
+                <div class="post-card">
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-meta">
+                        <span>👤 u/${post.author}</span>
+                        <div class="post-stats">
+                            <span class="stat">⬆️ ${post.score}</span>
+                            <span class="stat">💬 ${post.num_comments}</span>
+                            <span class="stat">📊 ${(post.upvote_ratio * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    ${post.selftext ? `<div class="post-content">${escapeHtml(post.selftext)}</div>` : ''}
+                    <div style="margin-top: 10px;">
+                        <a href="${post.permalink}" target="_blank" style="color: #74b9ff;">
+                            <i class="fas fa-external-link-alt"></i> View on Reddit
+                        </a>
+                        <button class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 0.8rem;"
+                                onclick="document.getElementById('post-id').value='${post.id}'; showTab('comments');">
+                            <i class="fas fa-comments"></i> View Comments
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="results">${postsHtml}</div>`;
+        }
+
+        function displayComments(containerId, data) {
+            const container = document.getElementById(containerId);
+
+            if (!data.comments || data.comments.length === 0) {
+                container.innerHTML = '<div class="error">No comments found</div>';
+                return;
+            }
+
+            const postInfo = `
+                <div class="post-card">
+                    <div class="post-title">${escapeHtml(data.post.title)}</div>
+                    <div class="post-meta">
+                        <span>👤 u/${data.post.author}</span>
+                        <span>⬆️ ${data.post.score}</span>
+                    </div>
+                </div>
+            `;
+
+            const commentsHtml = data.comments.slice(0, 20).map(comment => `
+                <div class="comment-card">
+                    <div class="comment-meta">
+                        👤 u/${comment.author} • ⬆️ ${comment.score} •
+                        ${new Date(comment.created_utc * 1000).toLocaleDateString()}
+                    </div>
+                    <div class="post-content">${escapeHtml(comment.body)}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="results">
+                    ${postInfo}
+                    <h3 style="margin: 20px 0;">Comments (${data.comments.length})</h3>
+                    ${commentsHtml}
+                </div>
+            `;
+        }
+
+        function displaySubredditInfo(containerId, info) {
+            const container = document.getElementById(containerId);
+
+            const infoHtml = `
+                <div class="results">
+                    <div class="subreddit-info">
+                        <div class="info-card">
+                            <h3>${info.subscribers.toLocaleString()}</h3>
+                            <p>Subscribers</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>${info.active_users || 'N/A'}</h3>
+                            <p>Active Users</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>${info.over18 ? 'Yes' : 'No'}</h3>
+                            <p>NSFW</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>${new Date(info.created_utc * 1000).getFullYear()}</h3>
+                            <p>Created</p>
+                        </div>
+                    </div>
+                    <div class="post-card">
+                        <div class="post-title">r/${info.name}</div>
+                        <div class="post-content">
+                            <strong>Title:</strong> ${escapeHtml(info.title)}<br><br>
+                            <strong>Description:</strong> ${escapeHtml(info.public_description)}
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <a href="${info.url}" target="_blank" style="color: #74b9ff;">
+                                <i class="fas fa-external-link-alt"></i> Visit Subreddit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = infoHtml;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load some default posts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPosts();
+        });
+    </script>
+</body>
+</html>
